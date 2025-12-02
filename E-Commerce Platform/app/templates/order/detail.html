@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Order #{{ order.order_id }} - E-Commerce{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1>Order #{{ order.order_id }}</h1>
+        <p class="text-muted">Placed on {{ order.order_date.strftime('%B %d, %Y at %I:%M %p') }}</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Order Items</h5>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order.items %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if item.product.images %}
+                                            {% set main_image = item.product.images|selectattr('is_main', 'equalto', True)|first or item.product.images[0] %}
+                                            <img src="{{ url_for('static', filename='uploads/' + main_image.filename) }}" 
+                                                 class="me-2" style="width: 50px; height: 50px; object-fit: cover;">
+                                        {% endif %}
+                                        <div>{{ item.product.name }}</div>
+                                    </div>
+                                </td>
+                                <td>{{ item.quantity }}</td>
+                                <td>${{ "%.2f"|format(item.price_at_purchase|float) }}</td>
+                                <td>${{ "%.2f"|format((item.price_at_purchase|float * item.quantity)) }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="border-top">
+                            <th colspan="3">Total:</th>
+                            <th>${{ "%.2f"|format(order.total_price|float) }}</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Order Status</h5>
+            </div>
+            <div class="card-body">
+                <p>
+                    <strong>Status:</strong>
+                    <span class="badge bg-{{ 'primary' if order.status == 'Pending' else 'info' if order.status == 'Processing' else 'success' if order.status == 'Delivered' else 'warning' if order.status == 'Shipped' else 'danger' }}">
+                        {{ order.status }}
+                    </span>
+                </p>
+                {% if order.payment %}
+                    <p>
+                        <strong>Payment:</strong>
+                        <span class="badge bg-{{ 'success' if order.payment.status == 'Success' else 'warning' if order.payment.status == 'Pending' else 'danger' }}">
+                            {{ order.payment.status }}
+                        </span>
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5>Shipping Address</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-0">{{ order.shipping_address|replace('\n', '<br>')|safe }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

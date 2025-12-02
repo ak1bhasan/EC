@@ -1,0 +1,105 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+  <div class="container">
+    <a class="navbar-brand" href="{{ url_for('products.index') }}">
+      <i class="bi bi-shop"></i> E-Commerce
+    </a>
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarNav"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('products.index') }}">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('products.index') }}"
+            >Products</a
+          >
+        </li>
+      </ul>
+      <ul class="navbar-nav">
+        {% if current_user.is_authenticated %}
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('cart.view_cart') }}">
+            <i class="bi bi-cart"></i> Cart {% if current_user.carts and
+            current_user.carts[0].items %}
+            <span class="badge bg-danger"
+              >{{ current_user.carts[0].items|length }}</span
+            >
+            {% endif %}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('orders.history') }}">Orders</a>
+        </li>
+        {% if current_user.is_admin %}
+        <li class="nav-item dropdown">
+          <a
+            class="nav-link dropdown-toggle"
+            href="#"
+            id="adminDropdown"
+            role="button"
+            data-bs-toggle="dropdown"
+          >
+            Admin
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a class="dropdown-item" href="{{ url_for('admin.dashboard') }}"
+                >Dashboard</a
+              >
+            </li>
+            <li>
+              <a class="dropdown-item" href="{{ url_for('admin.products') }}"
+                >Products</a
+              >
+            </li>
+            <li>
+              <a class="dropdown-item" href="{{ url_for('admin.orders') }}"
+                >Orders</a
+              >
+            </li>
+          </ul>
+        </li>
+        {% endif %}
+        <li class="nav-item dropdown">
+          <a
+            class="nav-link dropdown-toggle"
+            href="#"
+            id="userDropdown"
+            role="button"
+            data-bs-toggle="dropdown"
+          >
+            <i class="bi bi-person-circle"></i> {{ current_user.name }}
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a class="dropdown-item" href="{{ url_for('auth.profile') }}"
+                >Profile</a
+              >
+            </li>
+            <li><hr class="dropdown-divider" /></li>
+            <li>
+              <a class="dropdown-item" href="{{ url_for('auth.logout') }}"
+                >Logout</a
+              >
+            </li>
+          </ul>
+        </li>
+        {% else %}
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('auth.register') }}">Register</a>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Admin - Orders{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1>Orders Management</h1>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>User</th>
+                <th>Date</th>
+                <th>Items</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Payment</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+                <tr>
+                    <td>#{{ order.order_id }}</td>
+                    <td>{{ order.user.name }}<br><small class="text-muted">{{ order.user.email }}</small></td>
+                    <td>{{ order.order_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ order.items|length }} item(s)</td>
+                    <td>${{ "%.2f"|format(order.total_price|float) }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('admin.update_order_status', order_id=order.order_id) }}" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                                <option value="Pending" {% if order.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                <option value="Processing" {% if order.status == 'Processing' %}selected{% endif %}>Processing</option>
+                                <option value="Shipped" {% if order.status == 'Shipped' %}selected{% endif %}>Shipped</option>
+                                <option value="Delivered" {% if order.status == 'Delivered' %}selected{% endif %}>Delivered</option>
+                                <option value="Cancelled" {% if order.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                            </select>
+                        </form>
+                    </td>
+                    <td>
+                        {% if order.payment %}
+                            <span class="badge bg-{{ 'success' if order.payment.status == 'Success' else 'warning' if order.payment.status == 'Pending' else 'danger' }}">
+                                {{ order.payment.status }}
+                            </span>
+                        {% else %}
+                            <span class="badge bg-secondary">N/A</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('orders.detail', order_id=order.order_id) }}" class="btn btn-sm btn-primary">
+                            <i class="bi bi-eye"></i> View
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
