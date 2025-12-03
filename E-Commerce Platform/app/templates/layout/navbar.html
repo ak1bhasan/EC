@@ -1,7 +1,7 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+<nav class="navbar navbar-expand-lg navbar-light mb-4">
   <div class="container">
     <a class="navbar-brand" href="{{ url_for('main.home') }}">
-      <i class="bi bi-shop"></i> E-Commerce
+      <i class="bi bi-shop"></i> ShopNow
     </a>
     <button
       class="navbar-toggler"
@@ -14,16 +14,26 @@
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav me-auto">
         <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('products.index') }}">Products</a>
+          <a class="nav-link" href="{{ url_for('products.index') }}"
+            >Products</a
+          >
         </li>
       </ul>
       <ul class="navbar-nav">
-        {% if current_user.is_authenticated %}
+        {% if current_user.is_authenticated %} {% if not current_user.is_admin
+        %}
+        <!-- Customer-only navigation items -->
         <li class="nav-item">
           <a class="nav-link" href="{{ url_for('cart.view_cart') }}">
             <i class="bi bi-cart"></i> Cart {% if current_user.carts and
             current_user.carts[0].items %}
-            <span class="badge bg-danger"
+            <span
+              class="badge"
+              style="
+                background: rgba(239, 68, 68, 0.3);
+                color: #dc2626;
+                border: 1px solid rgba(239, 68, 68, 0.4);
+              "
               >{{ current_user.carts[0].items|length }}</span
             >
             {% endif %}
@@ -32,7 +42,7 @@
         <li class="nav-item">
           <a class="nav-link" href="{{ url_for('orders.history') }}">Orders</a>
         </li>
-        {% if current_user.is_admin %}
+        {% endif %} {% if current_user.is_admin %}
         <li class="nav-item dropdown">
           <a
             class="nav-link dropdown-toggle"
@@ -72,17 +82,35 @@
           >
             <i class="bi bi-person-circle"></i> {{ current_user.name }}
           </a>
-          <ul class="dropdown-menu">
+          <ul class="dropdown-menu" data-bs-auto-close="true">
+            {% if not current_user.is_admin %}
             <li>
               <a class="dropdown-item" href="{{ url_for('auth.profile') }}"
                 >Profile</a
               >
             </li>
             <li><hr class="dropdown-divider" /></li>
+            {% endif %}
             <li>
-              <a class="dropdown-item" href="{{ url_for('auth.logout') }}"
-                >Logout</a
+              <form
+                method="POST"
+                action="{{ url_for('auth.logout') }}"
+                id="logout-form"
+                style="margin: 0; padding: 0"
               >
+                <button
+                  type="submit"
+                  class="dropdown-item border-0 bg-transparent w-100 text-start"
+                  id="logout-btn"
+                  style="
+                    cursor: pointer;
+                    padding: 0.625rem 1rem;
+                    pointer-events: auto;
+                  "
+                >
+                  <i class="bi bi-box-arrow-right"></i> Logout
+                </button>
+              </form>
             </li>
           </ul>
         </li>
@@ -98,3 +126,39 @@
     </div>
   </div>
 </nav>
+<script>
+  // Logout button handler - ensure it works properly
+  document.addEventListener("DOMContentLoaded", function () {
+    const logoutBtn = document.getElementById("logout-btn");
+    const logoutForm = document.getElementById("logout-form");
+
+    if (logoutBtn && logoutForm) {
+      // Remove any existing handlers
+      logoutBtn.onclick = null;
+
+      // Add click handler with proper event handling
+      logoutBtn.addEventListener(
+        "click",
+        function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          console.log("Logout button clicked");
+          logoutForm.submit();
+          return false;
+        },
+        true
+      ); // Use capture phase
+
+      // Also handle form submit directly
+      logoutForm.addEventListener(
+        "submit",
+        function (e) {
+          e.stopPropagation();
+          console.log("Logout form submitting");
+        },
+        true
+      );
+    }
+  });
+</script>

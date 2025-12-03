@@ -2,8 +2,8 @@
 Update existing products in the database to set `image_url` values by product name.
 Run from the project root with your venv activated:
 
-    venv\Scripts\activate
-    python scripts\update_product_images.py
+    venv\\Scripts\\activate
+    python scripts\\update_product_images.py
 
 This script will update products if they exist. It does NOT drop or recreate tables.
 """

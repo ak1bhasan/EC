@@ -64,10 +64,26 @@ def admin_required(f):
     def decorated_function(*args, **kwargs):
         if not current_user.is_authenticated:
             flash("Please log in to access this page.", "warning")
-            return redirect(url_for("auth.login"))
+            return redirect(url_for("auth.admin_login"))
         if not current_user.is_admin:
             flash("You do not have permission to access this page.", "danger")
             return redirect(url_for("products.index"))
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
+def customer_required(f):
+    """Decorator to require customer role (non-admin users)."""
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated:
+            flash("Please log in to access this page.", "warning")
+            return redirect(url_for("auth.login"))
+        if current_user.is_admin:
+            flash("Admin users cannot access customer pages.", "danger")
+            return redirect(url_for("admin.dashboard"))
         return f(*args, **kwargs)
 
     return decorated_function

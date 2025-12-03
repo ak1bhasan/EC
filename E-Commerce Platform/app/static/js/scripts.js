@@ -37,4 +37,18 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   });
+
+  // Handle logout link - simple and direct approach
+  document.addEventListener('click', function(e) {
+    const logoutLink = e.target.closest('#logout-link');
+    if (logoutLink) {
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      const logoutUrl = logoutLink.getAttribute('href');
+      console.log('Logout triggered, navigating to:', logoutUrl);
+      window.location.href = logoutUrl;
+      return false;
+    }
+  }, true); // Use capture phase to catch before Bootstrap
 });

@@ -4,9 +4,11 @@
 <div class="container mt-5">
   <div class="row justify-content-center">
     <div class="col-md-10 text-center">
-      <h1 class="display-4">Welcome to E-Commerce Platform</h1>
-      <p class="lead mt-3">Find great products at great prices. Browse our catalog below.</p>
-      <a href="{{ url_for('products.index') }}" class="btn btn-primary btn-lg mt-3">Browse Products</a>
+      <div class="card" style="background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.3); padding: 3rem 2rem; margin-bottom: 2rem;">
+        <h1 class="display-4 mb-4" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 800;">Welcome to ShopNow</h1>
+        <p class="lead mt-3" style="color: var(--body-text); font-weight: 500;">Find great products at great prices. Browse our catalog below.</p>
+        <a href="{{ url_for('products.index') }}" class="btn btn-primary btn-lg mt-4">Browse Products</a>
+      </div>
     </div>
   </div>
 </div>

@@ -1,51 +1,132 @@
 {% extends "base.html" %}
 
-{% block title %}Login - E-Commerce{% endblock %}
+{% block title %}Login - ShopNow{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-6 col-lg-4">
+    <div class="col-md-6 col-lg-5">
         <div class="card">
             <div class="card-header">
                 <h3 class="text-center">Login</h3>
             </div>
             <div class="card-body">
-                <form method="POST">
-                    {{ form.hidden_tag() }}
-                    
-                    <div class="mb-3">
-                        {{ form.email.label(class="form-label") }}
-                        {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
-                        {% if form.email.errors %}
-                            <div class="invalid-feedback">
-                                {% for error in form.email.errors %}
-                                    <span>{{ error }}</span>
-                                {% endfor %}
+                <!-- Role Selection Tabs -->
+                <ul class="nav nav-tabs mb-4" id="loginTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {% if login_type == 'customer' or not login_type %}active{% endif %}" 
+                                id="customer-tab" 
+                                data-bs-toggle="tab" 
+                                data-bs-target="#customer-login" 
+                                type="button" 
+                                role="tab"
+                                onclick="window.location.href='{{ url_for('auth.login') }}'">
+                            Customer Login
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {% if login_type == 'admin' %}active{% endif %}" 
+                                id="admin-tab" 
+                                data-bs-toggle="tab" 
+                                data-bs-target="#admin-login" 
+                                type="button" 
+                                role="tab"
+                                onclick="window.location.href='{{ url_for('auth.admin_login') }}'">
+                            Admin Login
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content" id="loginTabContent">
+                    <!-- Customer Login Tab -->
+                    <div class="tab-pane fade {% if login_type == 'customer' or not login_type %}show active{% endif %}" 
+                         id="customer-login" 
+                         role="tabpanel">
+                        {% if login_type == 'customer' or not login_type %}
+                            <!-- Customer Login Form -->
+                            <form method="POST">
+                                {{ form.hidden_tag() }}
+                                
+                                <div class="mb-3">
+                                    {{ form.email.label(class="form-label") }}
+                                    {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+                                    {% if form.email.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.email.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    {{ form.password.label(class="form-label") }}
+                                    {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else "")) }}
+                                    {% if form.password.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.password.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="d-grid">
+                                    {{ form.submit(class="btn btn-primary") }}
+                                </div>
+                            </form>
+                            
+                            <hr>
+                            <p class="text-center mb-0">
+                                Don't have an account? <a href="{{ url_for('auth.register') }}">Register here</a>
+                            </p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Admin Login Tab -->
+                    <div class="tab-pane fade {% if login_type == 'admin' %}show active{% endif %}" 
+                         id="admin-login" 
+                         role="tabpanel">
+                        {% if login_type == 'admin' %}
+                            <!-- Admin Login Form -->
+                            <form method="POST">
+                                {{ form.hidden_tag() }}
+                                
+                                <div class="mb-3">
+                                    {{ form.username.label(class="form-label") }}
+                                    {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else "")) }}
+                                    {% if form.username.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.username.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    {{ form.password.label(class="form-label") }}
+                                    {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else "")) }}
+                                    {% if form.password.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.password.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="d-grid">
+                                    {{ form.submit(class="btn btn-primary") }}
+                                </div>
+                            </form>
+                            
+                            <div class="alert alert-info mt-3">
+                                <small><i class="bi bi-info-circle"></i> Admin accounts cannot be created through registration.</small>
                             </div>
                         {% endif %}
                     </div>
-                    
-                    <div class="mb-3">
-                        {{ form.password.label(class="form-label") }}
-                        {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else "")) }}
-                        {% if form.password.errors %}
-                            <div class="invalid-feedback">
-                                {% for error in form.password.errors %}
-                                    <span>{{ error }}</span>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="d-grid">
-                        {{ form.submit(class="btn btn-primary") }}
-                    </div>
-                </form>
-                
-                <hr>
-                <p class="text-center mb-0">
-                    Don't have an account? <a href="{{ url_for('auth.register') }}">Register here</a>
-                </p>
+                </div>
             </div>
         </div>
     </div>

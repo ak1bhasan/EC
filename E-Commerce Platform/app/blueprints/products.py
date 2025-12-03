@@ -5,12 +5,13 @@ from flask import (
     url_for,
     flash,
     request,
+    jsonify,
 )
 from flask_login import login_required
 from app.forms.product_forms import ProductForm
 from app.forms.cart_forms import AddToCartForm
 from app.models import Product, Category
-from app.extensions import db
+from app.extensions import db, csrf
 from app.utils import admin_required
 
 
@@ -23,7 +24,7 @@ def index():
     page = request.args.get("page", 1, type=int)
     products = (
         Product.query.order_by(Product.created_at.desc())
-        .paginate(page=page, per_page=9, error_out=False)
+        .paginate(page=page, per_page=12, error_out=False)
     )
     return render_template("product/list.html", products=products)
 
@@ -34,6 +35,81 @@ def detail(product_id):
     form = AddToCartForm()
     form.product_id.data = product_id
     return render_template("product/detail.html", product=product, form=form)
+
+
+@products_bp.route("/products/add", methods=["POST"])
+@csrf.exempt
+def add():
+    """Add a new product via AJAX."""
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        errors = {}
+        if not data.get('name') or not data.get('name').strip():
+            errors['name'] = 'Product name is required'
+        if not data.get('price') or float(data.get('price', 0)) <= 0:
+            errors['price'] = 'Price must be greater than 0'
+        if not data.get('stock_status'):
+            errors['stock_status'] = 'Stock status is required'
+        if data.get('stock_status') == 'in_stock':
+            stock = int(data.get('stock', 0))
+            if stock < 0:
+                errors['stock'] = 'Stock quantity must be 0 or greater'
+        if not data.get('image_url') or not data.get('image_url').strip():
+            errors['image_url'] = 'Image URL is required'
+        if not data.get('category') or not data.get('category').strip():
+            errors['category'] = 'Category is required'
+        
+        if errors:
+            return jsonify({'success': False, 'errors': errors}), 400
+        
+        # Find or create category
+        category_name = data.get('category').strip()
+        category = Category.query.filter_by(name=category_name).first()
+        
+        if not category:
+            # Create category with slug
+            slug = category_name.lower().replace(' ', '-').replace('&', 'and')
+            # Ensure slug is unique
+            base_slug = slug
+            counter = 1
+            while Category.query.filter_by(slug=slug).first():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            
+            category = Category(name=category_name, slug=slug)
+            db.session.add(category)
+            db.session.flush()
+        
+        # Determine stock value
+        stock_value = int(data.get('stock', 0)) if data.get('stock_status') == 'in_stock' else 0
+        
+        # Create product
+        product = Product(
+            name=data.get('name').strip(),
+            category_id=category.category_id,
+            price=float(data.get('price')),
+            stock=stock_value,
+            description=data.get('description', '').strip(),
+            image_url=data.get('image_url').strip()
+        )
+        
+        db.session.add(product)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Product added successfully',
+            'product_id': product.product_id
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'message': f'Error adding product: {str(e)}'
+        }), 500
 
 
 @products_bp.route("/admin/product/new", methods=["GET", "POST"])

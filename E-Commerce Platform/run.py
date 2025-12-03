@@ -1,4 +1,3 @@
-
 # Install packages from the terminal, not inside the script:
 #   python -m pip install PyMySQL
 from app import create_app

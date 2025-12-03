@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Admin Dashboard{% endblock %}
+{% block title %}Admin Dashboard - ShopNow{% endblock %}
 
 {% block content %}
 <div class="row mb-4">
@@ -104,15 +104,26 @@
                         </thead>
                         <tbody>
                             {% for order in latest_orders %}
-                                <tr>
+                                <tr id="order-row-{{ order.order_id }}">
                                     <td>#{{ order.order_id }}</td>
                                     <td>{{ order.user.name }}</td>
                                     <td>{{ order.order_date.strftime('%Y-%m-%d %H:%M') }}</td>
                                     <td>${{ "%.2f"|format(order.total_price|float) }}</td>
                                     <td>
-                                        <span class="badge bg-{{ 'primary' if order.status == 'Pending' else 'info' if order.status == 'Processing' else 'success' if order.status == 'Delivered' else 'warning' if order.status == 'Shipped' else 'danger' }}">
-                                            {{ order.status }}
-                                        </span>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge bg-{{ 'secondary' if order.status == 'Pending' else 'primary' if order.status == 'Processing' else 'warning' if order.status == 'Shipped' else 'success' if order.status == 'Delivered' else 'danger' }}" id="status-badge-{{ order.order_id }}">
+                                                {{ order.status }}
+                                            </span>
+                                            <select class="form-select form-select-sm status-select" 
+                                                    data-order-id="{{ order.order_id }}" 
+                                                    style="width: auto; min-width: 120px;">
+                                                <option value="Pending" {% if order.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                                <option value="Processing" {% if order.status == 'Processing' %}selected{% endif %}>Processing</option>
+                                                <option value="Shipped" {% if order.status == 'Shipped' %}selected{% endif %}>Shipped</option>
+                                                <option value="Delivered" {% if order.status == 'Delivered' %}selected{% endif %}>Delivered</option>
+                                                <option value="Cancelled" {% if order.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                                            </select>
+                                        </div>
                                     </td>
                                     <td>
                                         <a href="{{ url_for('orders.detail', order_id=order.order_id) }}" class="btn btn-sm btn-primary">
@@ -130,5 +141,110 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle status updates via AJAX
+    const statusSelects = document.querySelectorAll('.status-select');
+    
+    statusSelects.forEach(select => {
+        select.addEventListener('change', async function() {
+            const orderId = this.getAttribute('data-order-id');
+            const newStatus = this.value;
+            const badge = document.getElementById(`status-badge-${orderId}`);
+            const originalStatus = badge.textContent.trim();
+            
+            // Disable select during update
+            this.disabled = true;
+            
+            try {
+                const response = await fetch(`/admin/order/${orderId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    // Update badge
+                    badge.textContent = newStatus;
+                    badge.className = 'badge bg-' + getStatusColor(newStatus);
+                    
+                    // Show toast notification
+                    showToast(`Order #${orderId} updated to ${newStatus}`, 'success');
+                } else {
+                    // Revert select
+                    this.value = originalStatus;
+                    showToast(result.message || 'Failed to update order status', 'danger');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                // Revert select
+                this.value = originalStatus;
+                showToast('An error occurred while updating order status', 'danger');
+            } finally {
+                // Re-enable select
+                this.disabled = false;
+            }
+        });
+    });
+    
+    // Helper function to get badge color for status
+    function getStatusColor(status) {
+        const colors = {
+            'Pending': 'secondary',
+            'Processing': 'primary',
+            'Shipped': 'warning',
+            'Delivered': 'success',
+            'Cancelled': 'danger'
+        };
+        return colors[status] || 'secondary';
+    }
+    
+    // Show toast notification
+    function showToast(message, type) {
+        // Create toast container if it doesn't exist
+        let toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.className = 'position-fixed top-0 end-0 p-3';
+            toastContainer.style.zIndex = '9999';
+            document.body.appendChild(toastContainer);
+        }
+        
+        // Create toast element
+        const toastId = 'toast-' + Date.now();
+        const toast = document.createElement('div');
+        toast.id = toastId;
+        toast.className = `toast align-items-center text-white bg-${type} border-0`;
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-live', 'assertive');
+        toast.setAttribute('aria-atomic', 'true');
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        `;
+        
+        toastContainer.appendChild(toast);
+        
+        // Initialize and show toast
+        const bsToast = new bootstrap.Toast(toast, { autohide: true, delay: 3000 });
+        bsToast.show();
+        
+        // Remove toast element after it's hidden
+        toast.addEventListener('hidden.bs.toast', function() {
+            toast.remove();
+        });
+    }
+});
+</script>
 {% endblock %}
 

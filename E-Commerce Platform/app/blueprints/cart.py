@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from app.forms.cart_forms import CartUpdateForm, AddToCartForm
 from app.models import Cart, CartItem, Product
 from app.extensions import db
+from app.utils import customer_required
 
 cart_bp = Blueprint("cart", __name__)
 
@@ -18,7 +19,7 @@ def get_or_create_cart():
 
 
 @cart_bp.route("/cart")
-@login_required
+@customer_required
 def view_cart():
     """View shopping cart."""
     cart = get_or_create_cart()
@@ -26,7 +27,7 @@ def view_cart():
 
 
 @cart_bp.route("/cart/add", methods=["POST"])
-@login_required
+@customer_required
 def add_to_cart():
     """Add product to cart."""
     form = AddToCartForm()
@@ -75,7 +76,7 @@ def add_to_cart():
 
 
 @cart_bp.route("/cart/update", methods=["POST"])
-@login_required
+@customer_required
 def update_cart():
     """Update cart item quantity."""
     form = CartUpdateForm()
@@ -114,7 +115,7 @@ def update_cart():
 
 
 @cart_bp.route("/cart/remove", methods=["POST"])
-@login_required
+@customer_required
 def remove_from_cart():
     """Remove item from cart."""
     cart_item_id = request.form.get("cart_item_id", type=int)
